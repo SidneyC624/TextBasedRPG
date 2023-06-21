@@ -1,4 +1,5 @@
 import java.awt.*;
+import java.util.*;
 import java.awt.event.*;
 
 import javax.swing.*;
@@ -15,8 +16,9 @@ public class Game {
 	Font normalFont = new Font("Times New Roman", Font.PLAIN, 28);
 	TitleScreenHandler tsHandler = new TitleScreenHandler();
 	ChoiceHandler choiceHandler = new ChoiceHandler();
-	int playerHP;
+	int playerHP, monsterHP, silverRing;
 	String weapon, position;
+	Random random = new Random();
 	
 	public static void main(String[] args) {
 		new Game();
@@ -76,7 +78,7 @@ public class Game {
 		
 		choicePanel = new JPanel();
 		choicePanel.setBounds(250,350,300,100);
-		choicePanel.setBackground(Color.red);
+		choicePanel.setBackground(Color.black);
 		choicePanel.setLayout(new GridLayout(4,1));
 		
 		choice1 = new JButton("Choice 1");
@@ -148,6 +150,7 @@ public class Game {
 	
 	public void playerSetup() {
 		playerHP = 15;
+		monsterHP = 20;
 		weapon = "Knife";
 		hpLabelNumber.setText(String.valueOf(playerHP));
 		weaponLabelName.setText(weapon);
@@ -177,6 +180,148 @@ public class Game {
 		choice4.setText("");
 	}
 	
+	public void attackGuard() {
+		position = "attackGuard";
+		mainTextArea.setText("Guard: Hey don't be stupid! \nThe guard fought back and hit you hard"
+				+ "\n(You receive 3 damage)");
+		playerHP -= 3;
+		hpLabelNumber.setText(String.valueOf(playerHP));
+		choice1.setText(">");
+		choice2.setText("");
+		choice3.setText("");
+		choice4.setText("");
+	}
+	
+	public void crossRoad() {
+		position = "crossRoad";
+		mainTextArea.setText("You are at a crossroad. \nIf you go south, you will go back to the town");
+		
+		choice1.setText("Go north");
+		choice2.setText("Go east");
+		choice3.setText("Go south");
+		choice4.setText("Go west");
+	}
+	
+	public void north() {
+		position = "north";
+		mainTextArea.setText("There is a river. \nYou drink the water and rest at the riverside. "
+				+ "\n(Your HP is recovered by 2)");
+		playerHP += 2;
+		hpLabelNumber.setText(String.valueOf(playerHP));
+		choice1.setText("Go south");
+		choice2.setText("");
+		choice3.setText("");
+		choice4.setText("");
+	}
+	
+	public void east() {
+		position = "east";
+		mainTextArea.setText("You walked into a forest and found a long sword!"
+				+ "\n\n(You obtained a long sword)");
+		weapon = "Long Sword";
+		weaponLabelName.setText(weapon);
+		
+		choice1.setText("Go west");
+		choice2.setText("");
+		choice3.setText("");
+		choice4.setText("");
+	}
+	
+	public void west() {
+		position = "west";
+		mainTextArea.setText("You encounter a goblin!");
+		
+		choice1.setText("Fight");
+		choice2.setText("Run");
+		choice3.setText("");
+		choice4.setText("");
+	}
+	
+	public void fight() {
+		position = "fight";
+		mainTextArea.setText("Monster HP: " + monsterHP + "\n\nWhat do you do?");
+		
+		choice1.setText("Attack");
+		choice2.setText("Run");
+		choice3.setText("");
+		choice4.setText("");
+	}
+	
+	public void playerAttack() {
+		position = "playerAttack";
+		
+		int playerDamage = 0;
+		if(weapon.equals("Knife")) {
+			playerDamage = random.nextInt(3);
+		}
+		else if (weapon.equals("Long Sword")) {
+			playerDamage = random.nextInt(12);
+		}
+		
+		monsterHP -= playerDamage;
+		mainTextArea.setText("You attacked the monster and dealt " + playerDamage + " damage!");
+		
+		choice1.setText(">");
+		choice2.setText("");
+		choice3.setText("");
+		choice4.setText("");
+	}
+	
+	public void monsterAttack() {
+		position = "monsterAttack";
+		int monsterDamage = 0;
+		
+		monsterDamage = random.nextInt(4);
+		mainTextArea.setText("The monster attacked you and dealt " + monsterDamage + " damage");
+		playerHP -= monsterDamage;
+		hpLabelNumber.setText(String.valueOf(playerHP));
+		
+		choice1.setText(">");
+		choice2.setText("");
+		choice3.setText("");
+		choice4.setText("");
+	}
+	
+	public void win() {
+		position = "win";
+		mainTextArea.setText("You defeated the goblin! \nThe goblin dropped a ring! "
+				+ "\n(You obtained a Silver Ring)");
+		silverRing = 1;
+		
+		choice1.setText("Go east");
+		choice2.setText("");
+		choice3.setText("");
+		choice4.setText("");
+	}
+	
+	public void lose() {
+		position = "lose";
+		mainTextArea.setText("You are dead! \n\n<GAME OVER>");
+		
+		choice1.setText("");
+		choice2.setText("");
+		choice3.setText("");
+		choice4.setText("");
+		choice1.setVisible(false);
+		choice2.setVisible(false);
+		choice3.setVisible(false);
+		choice4.setVisible(false);
+	}
+	
+	public void ending() {
+		position = "ending";
+		mainTextArea.setText("Guard: Oh you killed the goblin!? \nYou are a true hero! \n\n<THE END>");
+		
+		choice1.setText("");
+		choice2.setText("");
+		choice3.setText("");
+		choice4.setText("");
+		choice1.setVisible(false);
+		choice2.setVisible(false);
+		choice3.setVisible(false);
+		choice4.setVisible(false);
+	}
+	
 	public class TitleScreenHandler implements ActionListener {
 
 		@Override
@@ -195,9 +340,16 @@ public class Game {
 			switch(position) {
 			case "townGate":
 				switch(yourChoice) {
-				case "c1": talkGuard(); break;
-				case "c2": break;
-				case "c3": break;
+				case "c1": 
+					if(silverRing == 1) {
+						ending();
+					}
+					else {
+						talkGuard();
+					}
+					break;
+				case "c2": attackGuard(); break;
+				case "c3": crossRoad();break;
 				}
 				break;
 			case "talkGuard":
@@ -205,7 +357,70 @@ public class Game {
 				case "c1": townGate(); break;
 				}
 				break;
-				
+			case "attackGuard":
+				switch(yourChoice) {
+				case "c1": townGate(); break;
+				}
+				break;
+			case "crossRoad":
+				switch(yourChoice) {
+				case "c1": north(); break;
+				case "c2": east(); break;
+				case "c3": townGate(); break;
+				case "c4": west(); break;
+				}
+				break;
+			case "north":
+				switch(yourChoice) {
+				case "c1": crossRoad(); break;
+				}
+				break;
+			case "east":
+				switch(yourChoice) {
+				case "c1": crossRoad(); break;
+				}
+				break;
+			case "west":
+				switch(yourChoice) {
+				case "c1": fight(); break;
+				case "c2": crossRoad(); break;
+				}
+				break;
+			case "fight":
+				switch(yourChoice) {
+				case "c1": playerAttack(); break;
+				case "c2": crossRoad(); break;
+				}
+				break;
+			case "playerAttack":
+				switch(yourChoice) {
+				case "c1": 
+					if(monsterHP < 1) {
+						win(); 
+					}
+					else {
+						monsterAttack();
+					}
+					break;
+				}
+				break;
+			case "monsterAttack":
+				switch(yourChoice) {
+				case "c1": 
+					if(playerHP < 1) {
+						lose(); 
+					}
+					else {
+						fight();
+					}
+					break;
+				}
+				break;
+			case "win":
+				switch(yourChoice) {
+				case "c1": crossRoad(); break;
+				}
+				break;
 			}
 			
 		}
